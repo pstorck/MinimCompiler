@@ -35,6 +35,15 @@ public class P6 {
             System.exit(-1);
         }
 
+        PrintWriter outFile2 = null;
+        try {
+            outFile2 = new PrintWriter(args[1]);
+        } catch (FileNotFoundException ex) {
+            System.err.println("file " + args[1] +
+                    " could not be opened for writing");
+            System.exit(-1);
+        }
+
         // open output file
         PrintWriter outFile = null;
         try {
@@ -63,10 +72,15 @@ public class P6 {
 		if (!ErrMsg.getErr()) {  // if no errors, do type checking
 			((ProgramNode)root.value).typeCheck();
 		}
+
+        if (!ErrMsg.getErr()) {  // if no errors, unparse
+            ((ASTnode)root.value).unparse(outFile2, 0);
+        }
+        outFile2.close();
 		
-		if (!ErrMsg.getErr()) {  // if no errors, do code generation	
-			((ProgramNode)root.value).codeGen();
-		}
+//		if (!ErrMsg.getErr()) {  // if no errors, do code generation
+//			((ProgramNode)root.value).codeGen();
+//		}
         Codegen.p.close();
 
         return;

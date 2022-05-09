@@ -133,6 +133,14 @@ class ProgramNode extends ASTnode {
     public void nameAnalysis() {
         SymTable symTab = new SymTable();
         myDeclList.nameAnalysis(symTab);
+        try {
+            Sym mainSym = symTab.lookupGlobal("main");
+            if (mainSym == null || !mainSym.getType().isFnType()) {
+                ErrMsg.fatal(0, 0, "No main function");
+            }
+        } catch (EmptySymTableException e) {
+            // Should never happen
+        }
     }
     
     /***
@@ -170,9 +178,12 @@ class DeclListNode extends ASTnode {
      * decls in the list.
      ***/    
     public void nameAnalysis(SymTable symTab, SymTable globalTab) {
+        int offset = -8;
         for (DeclNode node : myDecls) {
             if (node instanceof VarDeclNode) {
                 ((VarDeclNode)node).nameAnalysis(symTab, globalTab);
+                ((VarDeclNode)node).getId().sym().setOffset(offset);
+                offset -= 4;
             } else {
                 node.nameAnalysis(symTab);
             }
@@ -218,8 +229,11 @@ class FormalsListNode extends ASTnode {
      ***/
     public List<Type> nameAnalysis(SymTable symTab) {
         List<Type> typeList = new LinkedList<Type>();
+        int offset = 4;
         for (FormalDeclNode node : myFormals) {
             Sym sym = node.nameAnalysis(symTab);
+            sym.setOffset(offset);
+            offset += 4;
             if (sym != null) {
                 typeList.add(sym.getType());
             }
@@ -397,6 +411,10 @@ class VarDeclNode extends DeclNode {
         mySize = size;
     }
 
+    public IdNode getId() {
+        return myId;
+    }
+
     /***
      * nameAnalysis (overloaded)
      * Given a symbol table symTab, do:
@@ -490,7 +508,7 @@ class VarDeclNode extends DeclNode {
         doIndent(p, indent);
         myType.unparse(p, 0);
         p.print(" ");
-        p.print(myId.name());
+        p.print(myId.name() + "(offset: " + myId.sym().getOffset() + ")");
         p.println(";");
     }
 
@@ -662,7 +680,7 @@ class FormalDeclNode extends DeclNode {
     public void unparse(PrintWriter p, int indent) {
         myType.unparse(p, 0);
         p.print(" ");
-        p.print(myId.name());
+        p.print(myId.name() + "(offset: " + myId.sym().getOffset() + ")");
     }
 
     // two kids

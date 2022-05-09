@@ -1,0 +1,5 @@
+void main(int a, bool b) {
+    int x;
+    bool y;
+    int z;
+}
