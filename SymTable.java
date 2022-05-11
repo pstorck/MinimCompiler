@@ -9,7 +9,7 @@ public class SymTable {
 	}
 
 	public int length() {
-		return list.size
+		return list.size();
 	}
 	
 	public void addDecl(String name, Sym sym) 
