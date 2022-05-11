@@ -29,6 +29,8 @@ public class Sym {
 
     public Sym(Type type) {
         this.type = type;
+        offset = 0;
+        global = false;
     }
     
     public Type getType() {

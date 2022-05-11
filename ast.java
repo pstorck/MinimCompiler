@@ -190,8 +190,12 @@ class DeclListNode extends ASTnode {
         for (DeclNode node : myDecls) {
             if (node instanceof VarDeclNode) {
                 ((VarDeclNode)node).nameAnalysis(symTab, globalTab);
-                ((VarDeclNode) node).getId().sym().setOffset(offset);
-                offset -= 4;
+                if (symTab.length() == 1) {
+                    ((VarDeclNode) node).getId().sym().setGlobal(true);
+                } else {
+                    ((VarDeclNode) node).getId().sym().setOffset(offset);
+                    offset -= 4;
+                }
             } else {
                 node.nameAnalysis(symTab);
             }
@@ -623,6 +627,8 @@ class FnDeclNode extends DeclNode {
                                " in FnDeclNode.nameAnalysis");
             System.exit(-1);
         }
+
+        symTab.print();
 
         return null;
     } 
@@ -2466,6 +2472,17 @@ class EqualsNode extends EqualityExpNode {
         myExp2.unparse(p, 0);
         p.print(")");
     }
+
+    public void codeGen() {
+        myExp1.codeGen();
+        myExp2.codeGen();
+        Codegen.genPop(Codegen.T1);
+        Codegen.genPop(Codegen.T0);
+        Codegen.generate("xor", Codegen.T0, Codegen.T0, Codegen.T1);
+        Codegen.generate("li", Codegen.T1, String.valueOf(1));
+        Codegen.generate("sltu", Codegen.T0, Codegen.T0, Codegen.T1);
+        Codegen.genPush(Codegen.T0);
+    }
 }
 
 class NotEqualsNode extends EqualityExpNode {
@@ -2480,6 +2497,18 @@ class NotEqualsNode extends EqualityExpNode {
         myExp2.unparse(p, 0);
         p.print(")");
     }
+
+    public void codeGen() {
+        myExp1.codeGen();
+        myExp2.codeGen();
+        Codegen.genPop(Codegen.T1);
+        Codegen.genPop(Codegen.T0);
+        Codegen.generate("xor", Codegen.T0, Codegen.T0, Codegen.T1);
+        Codegen.generate("li", Codegen.T1, String.valueOf(0));
+        Codegen.generate("sgtu", Codegen.T0, Codegen.T0, Codegen.T1);
+        Codegen.genPush(Codegen.T0);
+    }
+
 }
 
 class LessNode extends RelationalExpNode {
