@@ -174,6 +174,10 @@ class DeclListNode extends ASTnode {
     public void nameAnalysis(SymTable symTab) {
         nameAnalysis(symTab, symTab);
     }
+
+    public int length() {
+        return myDecls.size();
+    }
     
     /***
      * nameAnalysis
@@ -278,6 +282,10 @@ class FnBodyNode extends ASTnode {
     public FnBodyNode(DeclListNode declList, StmtListNode stmtList) {
         myDeclList = declList;
         myStmtList = stmtList;
+    }
+
+    public DeclListNode getDeclList() {
+        return myDeclList;
     }
 
     /***
@@ -603,6 +611,8 @@ class FnDeclNode extends DeclNode {
         if (sym != null) {
             sym.addFormals(typeList);
         }
+
+        sym.setLocalVars(myBody.getDeclList().length());
         
         myBody.nameAnalysis(symTab); // process the function body
         
@@ -613,7 +623,7 @@ class FnDeclNode extends DeclNode {
                                " in FnDeclNode.nameAnalysis");
             System.exit(-1);
         }
-        
+
         return null;
     } 
        
@@ -642,11 +652,14 @@ class FnDeclNode extends DeclNode {
         if (myId.name().equals("main")) {
             Codegen.genLabel("# __start");
         }
+        Codegen.generate("# ... Funtion Prologue ...");
         Codegen.genPush(Codegen.RA);
         Codegen.genPush(Codegen.FP);
         Codegen.generate("addu", Codegen.FP, Codegen.SP, 8);
-        // TODO: update sp for local vars
+        Codegen.generate("subu", Codegen.SP, Codegen.SP, ((FnSym)myId.sym()).getLocalVars() * 4);
+        Codegen.generate("# ... Funtion Body ...");
         myBody.codeGen();
+        Codegen.generate("# ... Funtion Epilogue ...");
         Codegen.generateIndexed("lw", Codegen.RA, Codegen.FP, 0);
         Codegen.generate("move", Codegen.T0, Codegen.FP);
         Codegen.generateIndexed("lw", Codegen.FP, Codegen.FP, -4);
@@ -920,6 +933,11 @@ class AssignStmtNode extends StmtNode {
         doIndent(p, indent);
         myAssign.unparse(p, -1); // no parentheses
         p.println(";");
+    }
+
+    public void codeGen() {
+        myAssign.codeGen();
+        Codegen.genPop(Codegen.T0);
     }
 
     // one kid
@@ -1410,7 +1428,9 @@ abstract class ExpNode extends ASTnode {
     abstract public int lineNum();
     abstract public int charNum();
 
-    public void codeGen() {}
+    public void codeGen() {
+        System.out.println("UNDEFINED EXPNODE CODEGEN");
+    }
 }
 
 class IntLitNode extends ExpNode {
@@ -1665,6 +1685,16 @@ class IdNode extends ExpNode {
         }
     }
 
+    public void genAddress() {
+        Codegen.generateIndexed("la", Codegen.T0, Codegen.FP, mySym.getOffset());
+        Codegen.genPush(Codegen.T0);
+    }
+
+    public void codeGen() {
+        Codegen.generateIndexed("lw", Codegen.T0, Codegen.FP, mySym.getOffset());
+        Codegen.genPush(Codegen.T0);
+    }
+
     private int myLineNum;
     private int myCharNum;
     private String myStrVal;
@@ -1897,6 +1927,15 @@ class AssignExpNode extends ExpNode {
         p.print(" = ");
         myExp.unparse(p, 0);
         if (indent != -1)  p.print(")");
+    }
+
+    public void codeGen() {
+        ((IdNode)myLhs).genAddress();
+        myExp.codeGen();
+        Codegen.genPop(Codegen.T1);
+        Codegen.genPop(Codegen.T0);
+        Codegen.generateIndexed("sw", Codegen.T1, Codegen.T0, 0);
+        Codegen.genPush(Codegen.T1);
     }
 
     // two kids

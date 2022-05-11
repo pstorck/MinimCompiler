@@ -1,6 +1,7 @@
 void main() {
-    disp << 3;
-    disp << true;
-    disp << false;
-    disp << "Parker";
+    int a;
+    int b;
+    a = b = 1;
+    disp << a;
+    disp << b;
 }

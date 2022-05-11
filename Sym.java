@@ -50,6 +50,16 @@ class FnSym extends Sym {
     private Type returnType;
     private int numParams;
     private List<Type> paramTypes;
+
+    public int getLocalVars() {
+        return localVars;
+    }
+
+    public void setLocalVars(int localVars) {
+        this.localVars = localVars;
+    }
+
+    private int localVars;
     
     public FnSym(Type type, int numparams) {
         super(new FnType());
