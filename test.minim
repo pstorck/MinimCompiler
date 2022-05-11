@@ -1,6 +1,7 @@
-void add(int a, int b) {
+int fn() {
+    return 7;
 }
 
 void main() {
-    add(6, 9);
+    disp << fn() + fn() + fn();
 }

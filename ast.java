@@ -369,7 +369,7 @@ class ExpListNode extends ASTnode {
     public ExpListNode(List<ExpNode> S) {
         myExps = S;
     }
-    
+
     public int size() {
         return myExps.size();
     }
@@ -416,11 +416,9 @@ class ExpListNode extends ASTnode {
                 p.print(", ");
                 it.next().unparse(p, indent);
             }
-        } 
+        }
     }
 
-    public void codeGen() {
-    }
 
     // list of kids (ExpNodes)
     private List<ExpNode> myExps;
@@ -677,6 +675,7 @@ class FnDeclNode extends DeclNode {
         Codegen.generateIndexed("lw", Codegen.RA, Codegen.FP, 0);
         Codegen.generate("move", Codegen.T0, Codegen.FP);
         Codegen.generateIndexed("lw", Codegen.FP, Codegen.FP, -4);
+        Codegen.generate("move", Codegen.SP, Codegen.T0);
         if (myId.name().equals("main")) {
             Codegen.generate("li", Codegen.V0, 10);
             Codegen.generate("syscall");
@@ -1492,6 +1491,11 @@ class ReturnStmtNode extends StmtNode {
         p.println(";");
     }
 
+    public void codeGen() {
+        myExp.codeGen();
+        Codegen.genPop(Codegen.V0);
+    }
+
     // one kid
     private ExpNode myExp; // possibly null
 }
@@ -1765,6 +1769,10 @@ class IdNode extends ExpNode {
         if (mySym != null) {
             p.print("(" + mySym + ")");
         }
+    }
+
+    public void fnCall() {
+        Codegen.generate("jal", name());
     }
 
     public void genAddress() {
@@ -2110,7 +2118,8 @@ class CallExpNode extends ExpNode {
     }
 
     public void codeGen() {
-        myExpList.codeGen();
+        myId.fnCall();
+        Codegen.genPush(Codegen.V0);
     }
 
     // two kids
