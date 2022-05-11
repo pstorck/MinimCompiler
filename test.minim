@@ -1,5 +1,8 @@
 void main() {
-    disp << 7 <= 10;
-    disp << 7 <= 1;
-    disp << 7 <= 7;
+    bool a;
+    bool b;
+    a = true;
+    disp << !a;
+    b = false;
+    disp << !b;
 }
