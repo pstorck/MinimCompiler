@@ -38,7 +38,7 @@ public class Sym {
     }
     
     public String toString() {
-        return type.toString() + ": " + offset;
+        return type.toString() + ": " + offset + "(" + global + ")";
     }
 }
 

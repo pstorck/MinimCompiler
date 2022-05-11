@@ -546,6 +546,13 @@ class VarDeclNode extends DeclNode {
         p.println(";");
     }
 
+    public void codeGen() {
+        if (myId.sym().isGlobal()) {
+            Codegen.generate(".data");
+            Codegen.generateLabeled("_" + myId.name(), ".word", "Global Variable", String.valueOf(0));
+        }
+    }
+
     // three kids
     private TypeNode myType;
     private IdNode myId;
@@ -624,11 +631,9 @@ class FnDeclNode extends DeclNode {
             symTab.removeScope();  // exit scope
         } catch (EmptySymTableException ex) {
             System.err.println("Unexpected EmptySymTableException " +
-                               " in FnDeclNode.nameAnalysis");
+                    " in FnDeclNode.nameAnalysis");
             System.exit(-1);
         }
-
-        symTab.print();
 
         return null;
     } 
@@ -1692,13 +1697,23 @@ class IdNode extends ExpNode {
     }
 
     public void genAddress() {
-        Codegen.generateIndexed("la", Codegen.T0, Codegen.FP, mySym.getOffset());
-        Codegen.genPush(Codegen.T0);
+        if (mySym.isGlobal()) {
+            Codegen.generate("la", Codegen.T0, "_" + name());
+            Codegen.genPush(Codegen.T0);
+        } else {
+            Codegen.generateIndexed("la", Codegen.T0, Codegen.FP, mySym.getOffset());
+            Codegen.genPush(Codegen.T0);
+        }
     }
 
     public void codeGen() {
-        Codegen.generateIndexed("lw", Codegen.T0, Codegen.FP, mySym.getOffset());
-        Codegen.genPush(Codegen.T0);
+        if (mySym.isGlobal()) {
+            Codegen.generate("lw", Codegen.T0, "_" + name());
+            Codegen.genPush(Codegen.T0);
+        } else {
+            Codegen.generateIndexed("lw", Codegen.T0, Codegen.FP, mySym.getOffset());
+            Codegen.genPush(Codegen.T0);
+        }
     }
 
     private int myLineNum;
