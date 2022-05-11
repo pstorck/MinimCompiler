@@ -1,5 +1,6 @@
-void main(int a, bool b) {
-    int x;
-    bool y;
-    int z;
+void main() {
+    disp << 3;
+    disp << true;
+    disp << false;
+    disp << "Parker";
 }

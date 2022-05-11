@@ -9,6 +9,16 @@ public class Sym {
 
     private int offset;
 
+    private boolean global;
+
+    public boolean isGlobal() {
+        return global;
+    }
+
+    public void setGlobal(boolean global) {
+        this.global = global;
+    }
+
     public int getOffset() {
         return offset;
     }

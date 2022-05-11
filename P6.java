@@ -73,14 +73,14 @@ public class P6 {
 			((ProgramNode)root.value).typeCheck();
 		}
 
-        if (!ErrMsg.getErr()) {  // if no errors, unparse
-            ((ASTnode)root.value).unparse(outFile2, 0);
-        }
-        outFile2.close();
+//        if (!ErrMsg.getErr()) {  // if no errors, unparse
+//            ((ASTnode)root.value).unparse(outFile2, 0);
+//        }
+//        outFile2.close();
 		
-//		if (!ErrMsg.getErr()) {  // if no errors, do code generation
-//			((ProgramNode)root.value).codeGen();
-//		}
+		if (!ErrMsg.getErr()) {  // if no errors, do code generation
+			((ProgramNode)root.value).codeGen();
+		}
         Codegen.p.close();
 
         return;
