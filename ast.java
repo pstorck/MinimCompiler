@@ -2326,6 +2326,15 @@ class PlusNode extends ArithmeticExpNode {
         myExp2.unparse(p, 0);
         p.print(")");
     }
+
+    public void codeGen() {
+        myExp1.codeGen();
+        myExp2.codeGen();
+        Codegen.genPop(Codegen.T1);
+        Codegen.genPop(Codegen.T0);
+        Codegen.generate("add", Codegen.T0, Codegen.T0, Codegen.T1);
+        Codegen.genPush(Codegen.T0);
+    }
 }
 
 class MinusNode extends ArithmeticExpNode {

@@ -1,7 +1,3 @@
 void main() {
-    int a;
-    int b;
-    a = b = 1;
-    disp << a;
-    disp << b;
+    disp << 6 + 9;
 }
