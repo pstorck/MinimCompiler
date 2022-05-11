@@ -1,3 +1,10 @@
+int a;
+
 void main() {
-    disp << true && false;
+    while a < 5 {
+        disp << a;
+        disp << "\n";
+        a++;
+    }
+    disp << a;
 }
