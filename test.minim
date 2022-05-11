@@ -1,4 +1,5 @@
 void main() {
-    disp << "Parker";
-    disp << 7 * 15;
+    disp << 7 <= 10;
+    disp << 7 <= 1;
+    disp << 7 <= 7;
 }
