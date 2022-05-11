@@ -2126,6 +2126,15 @@ class UnaryMinusNode extends UnaryExpNode {
         myExp.unparse(p, 0);
         p.print(")");
     }
+
+    public void codeGen() {
+        myExp.codeGen();
+        Codegen.genPop(Codegen.T0);
+        Codegen.generate("li", Codegen.T1, String.valueOf(-1));
+        Codegen.generate("mult", Codegen.T0, Codegen.T1);
+        Codegen.generate("mflo", Codegen.T0);
+        Codegen.genPush(Codegen.T0);
+    }
 }
 
 class NotNode extends UnaryExpNode {
