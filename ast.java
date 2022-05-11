@@ -419,6 +419,9 @@ class ExpListNode extends ASTnode {
         } 
     }
 
+    public void codeGen() {
+    }
+
     // list of kids (ExpNodes)
     private List<ExpNode> myExps;
 }
@@ -1429,6 +1432,10 @@ class CallStmtNode extends StmtNode {
         p.println(";");
     }
 
+    public void codeGen() {
+        myCall.codeGen();
+    }
+
     // one kid
     private CallExpNode myCall;
 }
@@ -2100,6 +2107,10 @@ class CallExpNode extends ExpNode {
             myExpList.unparse(p, 0);
         }
         p.print(")");
+    }
+
+    public void codeGen() {
+        myExpList.codeGen();
     }
 
     // two kids

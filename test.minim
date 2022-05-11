@@ -1,10 +1,6 @@
-int a;
+void add(int a, int b) {
+}
 
 void main() {
-    while a < 5 {
-        disp << a;
-        disp << "\n";
-        a++;
-    }
-    disp << a;
+    add(6, 9);
 }
