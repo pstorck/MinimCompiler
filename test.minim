@@ -1,7 +1,12 @@
-int fn() {
-    return 7;
+int a;
+
+void fn() {
+    a = 5;
+    return;
+    a = 6;
 }
 
 void main() {
-    disp << fn() + fn() + fn();
+    fn();
+    disp << a;
 }

@@ -315,8 +315,8 @@ class FnBodyNode extends ASTnode {
         myStmtList.unparse(p, indent);
     }
 
-    public void codeGen() {
-        myStmtList.codeGen();
+    public void codeGen(String name) {
+        myStmtList.codeGen(name);
     }
 
     // two kids
@@ -355,9 +355,13 @@ class StmtListNode extends ASTnode {
         }
     }
 
-    public void codeGen() {
+    public void codeGen(String name) {
         for (StmtNode node : myStmts) {
-            node.codeGen();
+            if (node instanceof ReturnStmtNode) {
+                ((ReturnStmtNode)node).codeGen(name);
+            } else {
+                node.codeGen();
+            }
         }
     }
 
@@ -670,8 +674,9 @@ class FnDeclNode extends DeclNode {
         Codegen.generate("addu", Codegen.FP, Codegen.SP, 8);
         Codegen.generate("subu", Codegen.SP, Codegen.SP, ((FnSym)myId.sym()).getLocalVars() * 4);
         Codegen.generate("# ... Function Body ...");
-        myBody.codeGen();
+        myBody.codeGen(myId.name());
         Codegen.generate("# ... Function Epilogue ...");
+        Codegen.genLabel(myId.name() + "_exit");
         Codegen.generateIndexed("lw", Codegen.RA, Codegen.FP, 0);
         Codegen.generate("move", Codegen.T0, Codegen.FP);
         Codegen.generateIndexed("lw", Codegen.FP, Codegen.FP, -4);
@@ -1221,7 +1226,7 @@ class IfStmtNode extends StmtNode {
         Codegen.genPop(Codegen.T0);
         Codegen.generate("beq", Codegen.T0, Codegen.FALSE, endLabel);
         myDeclList.codeGen();
-        myStmtList.codeGen();
+        myStmtList.codeGen(null);
         Codegen.genLabel(endLabel);
     }
 
@@ -1316,11 +1321,11 @@ class IfElseStmtNode extends StmtNode {
         Codegen.genPop(Codegen.T0);
         Codegen.generate("beq", Codegen.T0, Codegen.FALSE, falseLabel);
         myThenDeclList.codeGen();
-        myThenStmtList.codeGen();
+        myThenStmtList.codeGen(null);
         Codegen.generate("b", endLabel);
         Codegen.genLabel(falseLabel);
         myElseDeclList.codeGen();
-        myElseStmtList.codeGen();
+        myElseStmtList.codeGen(null);
         Codegen.genLabel(endLabel);
     }
 
@@ -1394,7 +1399,7 @@ class WhileStmtNode extends StmtNode {
         Codegen.genPop(Codegen.T0);
         Codegen.generate("beq", Codegen.T0, Codegen.FALSE, endLabel);
         myDeclList.codeGen();
-        myStmtList.codeGen();
+        myStmtList.codeGen(null);
         Codegen.generate("b", loopLabel);
         Codegen.genLabel(endLabel);
     }
@@ -1491,9 +1496,12 @@ class ReturnStmtNode extends StmtNode {
         p.println(";");
     }
 
-    public void codeGen() {
-        myExp.codeGen();
-        Codegen.genPop(Codegen.V0);
+    public void codeGen(String name) {
+        if (myExp != null) {
+            myExp.codeGen();
+            Codegen.genPop(Codegen.V0);
+        }
+        Codegen.generate("j", name + "_exit");
     }
 
     // one kid
