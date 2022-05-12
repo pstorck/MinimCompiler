@@ -357,8 +357,11 @@ class StmtListNode extends ASTnode {
 
     public void codeGen(String name) {
         for (StmtNode node : myStmts) {
-            if (node instanceof ReturnStmtNode) {
-                ((ReturnStmtNode)node).codeGen(name);
+            if (node instanceof ReturnStmtNode
+            || node instanceof IfStmtNode
+            || node instanceof IfElseStmtNode
+            || node instanceof WhileStmtNode) {
+                node.codeGen(name);
             } else {
                 node.codeGen();
             }
@@ -420,6 +423,15 @@ class ExpListNode extends ASTnode {
                 p.print(", ");
                 it.next().unparse(p, indent);
             }
+        }
+    }
+
+    public void codeGen() {
+        Collections.reverse(myExps);
+        for (ExpNode node : myExps) {
+            node.codeGen();
+            Codegen.genPop(Codegen.T0);
+            Codegen.genPush(Codegen.T0);
         }
     }
 
@@ -925,6 +937,10 @@ abstract class StmtNode extends ASTnode {
     abstract public void typeCheck(Type retType);
 
     public void codeGen() {}
+
+    public void codeGen(String name) {
+        System.out.println("Undefined codeGen(String name) for stmt");
+    }
 }
 
 class AssignStmtNode extends StmtNode {
@@ -1220,13 +1236,13 @@ class IfStmtNode extends StmtNode {
         p.println("}");
     }
 
-    public void codeGen() {
+    public void codeGen(String name) {
         String endLabel = Codegen.nextLabel();
         myExp.codeGen();
         Codegen.genPop(Codegen.T0);
         Codegen.generate("beq", Codegen.T0, Codegen.FALSE, endLabel);
         myDeclList.codeGen();
-        myStmtList.codeGen(null);
+        myStmtList.codeGen(name);
         Codegen.genLabel(endLabel);
     }
 
@@ -1314,18 +1330,18 @@ class IfElseStmtNode extends StmtNode {
         p.println("}");        
     }
 
-    public void codeGen() {
+    public void codeGen(String name) {
         String falseLabel = Codegen.nextLabel();
         String endLabel = Codegen.nextLabel();
         myExp.codeGen();
         Codegen.genPop(Codegen.T0);
         Codegen.generate("beq", Codegen.T0, Codegen.FALSE, falseLabel);
         myThenDeclList.codeGen();
-        myThenStmtList.codeGen(null);
+        myThenStmtList.codeGen(name);
         Codegen.generate("b", endLabel);
         Codegen.genLabel(falseLabel);
         myElseDeclList.codeGen();
-        myElseStmtList.codeGen(null);
+        myElseStmtList.codeGen(name);
         Codegen.genLabel(endLabel);
     }
 
@@ -1391,7 +1407,7 @@ class WhileStmtNode extends StmtNode {
         p.println("}");
     }
 
-    public void codeGen() {
+    public void codeGen(String name) {
         String loopLabel = Codegen.nextLabel();
         String endLabel = Codegen.nextLabel();
         Codegen.genLabel(loopLabel);
@@ -1399,7 +1415,7 @@ class WhileStmtNode extends StmtNode {
         Codegen.genPop(Codegen.T0);
         Codegen.generate("beq", Codegen.T0, Codegen.FALSE, endLabel);
         myDeclList.codeGen();
-        myStmtList.codeGen(null);
+        myStmtList.codeGen(name);
         Codegen.generate("b", loopLabel);
         Codegen.genLabel(endLabel);
     }
@@ -1575,7 +1591,9 @@ class StringLitNode extends ExpNode {
         myCharNum = charNum;
         myStrVal = strVal;
     }
-    
+
+    private static HashMap<String, String> strings = new HashMap<>();
+
     /***
      * Return the line number for this literal.
      ***/
@@ -1602,10 +1620,16 @@ class StringLitNode extends ExpNode {
     }
 
     public void codeGen() {
-        Codegen.generate(".data");
-        String label = Codegen.nextLabel();
-        Codegen.generateLabeled(label, ".asciiz", "String literal", myStrVal);
-        Codegen.generate(".text");
+        String label;
+        if (strings.get(myStrVal) == null) {
+            Codegen.generate(".data");
+            label = Codegen.nextLabel();
+            Codegen.generateLabeled(label, ".asciiz", "String literal", myStrVal);
+            Codegen.generate(".text");
+            strings.put(myStrVal, label);
+        } else {
+            label = strings.get(myStrVal);
+        }
         Codegen.generate("la", Codegen.T0, label);
         Codegen.genPush(Codegen.T0);
     }
@@ -2126,7 +2150,9 @@ class CallExpNode extends ExpNode {
     }
 
     public void codeGen() {
+        myExpList.codeGen();
         myId.fnCall();
+        Codegen.generate("addu", Codegen.SP, Codegen.SP, myExpList.size() * 4);
         Codegen.genPush(Codegen.V0);
     }
 
@@ -2283,7 +2309,7 @@ class NotNode extends UnaryExpNode {
 
     public void codeGen() {
         myExp.codeGen();
-        Codegen.genPush(Codegen.T0);
+        Codegen.genPop(Codegen.T0);
         Codegen.generate("li", Codegen.T1, String.valueOf(1));
         Codegen.generate("slt", Codegen.T0, Codegen.T0, Codegen.T1);
         Codegen.genPush(Codegen.T0);
