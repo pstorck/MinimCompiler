@@ -1454,6 +1454,7 @@ class CallStmtNode extends StmtNode {
 
     public void codeGen() {
         myCall.codeGen();
+        Codegen.genPop(Codegen.T0);
     }
 
     // one kid

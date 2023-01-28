@@ -15,7 +15,7 @@ import java_cup.runtime.*;
  * it will generate MIPS code to the output file.
  ****/
 
-public class P6 {
+public class Main {
     public static void main(String[] args)
         throws IOException // may be thrown by the scanner
     {

@@ -1,0 +1,7 @@
+*
+!*.java
+!test.minim
+!minim.*
+!Makefile
+!.gitignore
+!README.md
